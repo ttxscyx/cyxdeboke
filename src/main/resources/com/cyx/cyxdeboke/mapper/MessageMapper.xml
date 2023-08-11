@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cyx.cyxdeboke.mapper.MessageMapper">
+
+    <!--查询父级留言-->
+    <select id="findByParentIdNull" resultType="com.cyx.cyxdeboke.Entity.Message">
+        select *
+        from blog.message c
+        where c.parent_message_id = #{ParentId}
+        order by c.create_time desc
+    </select>
+
+    <!--查询一级回复-->
+    <select id="findByParentIdNotNull" resultType="com.cyx.cyxdeboke.Entity.Message">
+        select *
+        from blog.message c
+        where c.parent_message_id = #{id}
+        order by c.create_time desc
+    </select>
+
+    <!--查询二级以及所有子集回复-->
+    <select id="findByReplayId" resultType="com.cyx.cyxdeboke.Entity.Message">
+        select *
+        from blog.message c
+        where c.parent_message_id = #{childId}
+        order by c.create_time desc
+    </select>
+    <!--保存留言-->
+    <insert id="saveMessage" parameterType="com.cyx.cyxdeboke.Entity.Message">
+        insert into blog.message (nickname,email,content,avatar,create_time,parent_message_id,admin_message)
+        values (#{nickname},#{email},#{content},#{avatar},#{createTime},#{parentMessageId},#{adminMessage});
+    </insert>
+
+    <!--删除留言-->
+    <delete id="deleteMessage">
+        delete from message where id=#{id};
+    </delete>
+
+    <resultMap id="MessageShow" type="com.cyx.cyxdeboke.Entity.Message">
+        <id property="id" column="id"/>
+        <result property="email" column="email"/>
+        <result property="content" column="content"/>
+        <result property="nickname" column="nickname"/>
+        <result property="createTime" column="create_time"/>
+        <result property="parentCommentId" column="parent_comment_id"/>
+    </resultMap>
+    <!--通过查询前端传回来的评论分类id判断是不是父类-->
+    <select id="ParentMessage" resultMap="MessageShow">
+        select * from message where id =  #{id} ;
+    </select>
+</mapper>

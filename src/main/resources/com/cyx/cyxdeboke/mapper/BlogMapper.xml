@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cyx.cyxdeboke.mapper.BlogMapper">
+
+    <resultMap id="firstPageBlog" type="com.cyx.cyxdeboke.queryVo.FirstPageBlog">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="img1" column="img1"/>
+        <result property="content" column="content"/>
+        <result property="releasetime" column="releasetime"/>
+        <result property="commentCount" column="comment_count"/>
+        <result property="typeName" column="type_name"/>
+        <result property="typeId" column="type_id"/>
+        <result property="name" column="admin_name"/>
+    </resultMap>
+
+    <resultMap id="blog" type="com.cyx.cyxdeboke.queryVo.BlogQuery">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="modifytime" column="modifytime"/>
+        <result property="typeId" column="type_id"/>
+        <association property="type" javaType="com.cyx.cyxdeboke.Entity.Type">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+        </association>
+    </resultMap>
+    <!--后端,列表分页方法-->
+    <select id="listBlogs" resultMap="blog">
+        select b.id,b.title,b.modifytime,b.type_id,t.id,t.name from blog.blog b left outer join
+         blog.type t on b.type_id = t.id order by b.modifytime desc
+    </select>
+
+    <!--后端,列表搜索方法-->
+    <select id="searchBlogs" parameterType="com.cyx.cyxdeboke.queryVo.SearchBlog" resultMap="blog">
+        <bind name="pattern" value="'%' + title + '%'"/>
+        select b.id,b.title,b.modifytime,b.type_id,t.id,t.name from blog.blog b ,blog.type t
+        <where>
+            <if test="1 == 1">
+                b.type_id = t.id
+            </if>
+            <if test="typeId != null">
+                and b.type_id = #{typeId}
+            </if>
+            <if test="title != null">
+                and b.title like #{pattern}
+            </if>
+        </where>
+    </select>
+
+    <!--后端,删除博客-->
+    <delete id="deleteBlogById">
+        delete from blog where id=#{id}
+    </delete>
+
+    <!--后端,新增保存博客-->
+    <insert id="saveBlog" parameterType="com.cyx.cyxdeboke.Entity.Blog">
+        insert into blog.blog (id,title, content, comment_count, type_id, admin_id,releasetime,modifytime,img1,commentabled )
+        values (#{id},#{title},#{content},#{commentCount},#{typeId},#{AdminId},#{releasetime},#{modifytime},#{img1},#{commentabled});
+    </insert>
+
+    <resultMap id="updateblog" type="com.cyx.cyxdeboke.queryVo.ShowBlog">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="modifytime" column="modifytime"/>
+        <result property="releasetime" column="releasetime"/>
+        <result property="typeId" column="type_id"/>
+        <result property="img1" column="img1"/>
+    </resultMap>
+    <!--后端,通过前端传回来的id搜索出对应的数据-->
+    <select id="getBlogById" resultMap="updateblog">
+        select id,title,content,modifytime,releasetime,type_id,img1,commentabled
+                from blog where  id = #{id};
+    </select>
+
+    <!--后端,编辑博客-->
+    <update id="updateBlog" parameterType="com.cyx.cyxdeboke.queryVo.ShowBlog">
+        update blog.blog set title = #{title}, content = #{content}, type_id = #{typeId}, img1 = #{img1},
+        commentabled = #{commentabled} ,
+        modifytime = #{modifytime} where id = #{id};
+
+    </update>
+    <!--后端,查询Tpye表有没有的内容有没有被blog表引用,没有可以删除-->
+    <select id="Typeslistblog"  resultType="int">
+        select  count(*) from blog WHERE type_id=#{id};
+    </select>
+
+    <!--前端,将第一页博客展示出来-->
+    <select id="getFirstPageBlogs" resultMap="firstPageBlog">
+        select b.id,b.title,b.img1, b.content,b.releasetime,b.comment_count,
+               t.name as type_name,
+               t.id   as type_id,
+               a.name as admin_name
+        from blog.blog b, blog.type t,blog.admin a
+        where b.type_id = t.id and  a.id = b.admin_id order by b.releasetime desc
+    </select>
+
+    <!--查询博客详情-->
+    <resultMap id="detailedBlog" type="com.cyx.cyxdeboke.queryVo.DetailedBlog">
+        <id property="id" column="bid"/>
+        <result property="img1" column="img1"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="typeName" column="type_name"/>
+        <result property="commentabled" column="commentabled"/>
+        <result property="commentCount" column="comment_count"/>
+        <result property="releasetime" column="releasetime"/>
+        <result property="name" column="admin_name"/>
+    </resultMap>
+    <!--前端,根据id查出DetailedBlog-->
+    <select id="getDetailedBlogById" resultMap="detailedBlog">
+        select b.id bid,b.img1,b.title,b.content,b.comment_count,b.releasetime,b.commentabled,
+               t.name as type_name,
+               a.name as admin_name
+        from blog.blog b,blog.admin a, blog.type t
+        where b.admin_id = a.id and b.type_id = t.id and b.id = #{id}
+    </select>
+
+    <!--查询出文章评论数量并更新-->
+    <update id="getCommentCountById" parameterType="com.cyx.cyxdeboke.Entity.Blog">
+        update blog.blog b set b.comment_count = (
+            select count(*) from blog.comment c where c.blog_id = #{id} and b.id = #{id}
+        ) WHERE b.id = #{id}
+    </update>
+
+    <!--查询博客总数量-->
+    <select id="getBlogTotal" resultType="Integer">
+        select count(*) from blog.blog;
+    </select>
+
+    <!--查询评论总数-->
+    <select id="getBlogCommentTotal" resultType="Integer">
+        select count(*) from blog.comment;
+    </select>
+
+    <!--查询留言总数-->
+    <select id="getBlogMessageTotal" resultType="Integer">
+        select count(*) from blog.message;
+    </select>
+
+    <!--前端搜索博客-->
+    <select id="getSearchBlogs" resultMap="firstPageBlog">
+        <bind name="pattern" value="'%'+query+'%'"/>
+        select b.id,b.title,b.img1, b.comment_count,b.content,b.releasetime,
+        t.name as type_name,
+        a.name as admin_name
+        from blog.blog b, blog.type t,blog.admin a
+        where b.type_id = t.id and a.id = b.admin_id and (b.title like #{pattern} or b.content like #{pattern})
+        order by b.releasetime desc
+    </select>
+
+    <!--根据分类id获取博客-->
+    <select id="getBlogsByTypeId" resultMap="firstPageBlog">
+        select b.id,b.title,b.img1,  b.comment_count, b.releasetime,b.content,
+               t.name as type_name,
+               a.name as admin_name
+        from blog.blog b, blog.type t,blog.admin a
+        where b.type_id = t.id and a.id = b.admin_id and b.type_id = #{typeId} order by b.releasetime desc
+    </select>
+
+    <resultMap id="archiveBlogs" type="com.cyx.cyxdeboke.queryVo.ArchiveBlog">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="releasetime" column="releasetime"/>
+    </resultMap>
+    <!--查询时间轴博客信息-->
+    <select id="getArchiveBlogs" resultMap="archiveBlogs">
+        select b.id,b.title,b.releasetime from blog.blog b order by b.releasetime desc ;
+    </select>
+</mapper>

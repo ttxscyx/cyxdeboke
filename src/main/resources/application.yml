@@ -1,0 +1,40 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/blog?characterEncoding=UTF-8
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  mvc:
+    view:
+      prefix: /
+      suffix: .html
+
+  thymeleaf:
+    cache: false
+    prefix: /
+    suffix: .html
+    mode: HTML
+
+  mail:
+    host: smtp.qq.com
+    username: 1525292140@qq.com
+    password: sdcwzhpqzxhrhibc
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth=true:
+          starttls:
+            enable=true:
+    from: 1525292140@qq.com
+  web:
+    resources:
+      static-locations: classpath:/webapp/
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+message.avatar: ../blog/img/me.jpg
