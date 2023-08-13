@@ -100,6 +100,7 @@ public class BlogController {
     public String editInput(@PathVariable Long id, Model model) {
         ShowBlog blogById = blogService.getBlogById(id);
         List<Type> allType = typeService.getAlltype();
+        System.out.println("alllllType："+allType);
         model.addAttribute("blog", blogById);
         model.addAttribute("types", allType);
         return "admin/blogs-input";
