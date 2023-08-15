@@ -1,8 +1,10 @@
 package com.cyx.cyxdeboke;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.SpringVersion;
 import org.springframework.web.servlet.ViewResolver;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
@@ -13,6 +15,9 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 public class CyxdebokeApplication {
 
     public static void main(String[] args) {
+        String springVersion = SpringVersion.getVersion();
+        String springBootVersion = SpringBootVersion.getVersion();
+        System.out.println("Spring版本:"+springVersion+"\nSpringBoot版本:"+springBootVersion);
         SpringApplication.run(CyxdebokeApplication.class, args);
     }
     // 配置Thymeleaf视图解析器
